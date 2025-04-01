@@ -1,11 +1,11 @@
-import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
-import path from 'path'
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
+import path from 'path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: '/polldetector/',  // Add this line
   plugins: [svelte()],
+  base: '/ai-incidents-timeline/', // Replace with your repository name
   resolve: {
     alias: {
       "$components": path.resolve('./src/components'),
@@ -13,4 +13,4 @@ export default defineConfig({
       "$routes": path.resolve('./src/routes'),
     }
   }
-})
+});
