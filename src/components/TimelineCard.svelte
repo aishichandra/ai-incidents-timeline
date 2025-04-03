@@ -45,17 +45,19 @@
     <p class="card-description">{description}</p>
     {#if links.length}
   <div class="card-links">
-    <!-- <div class="related-label">Read More</div> -->
+    <div class="related-label">Read More</div>
     {#if links.length > 0}
     <ul>
       {#each links as link}
         <li>
-          <a href={link.url} target="_blank" rel="noopener noreferrer">
+          <a class="related-link" href={link.url} target="_blank" rel="noopener noreferrer" title={link.url}>
             {link.text}
           </a>
         </li>
       {/each}
     </ul>
+    
+    
   {/if}
   </div>
 {/if}

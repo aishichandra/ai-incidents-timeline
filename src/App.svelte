@@ -52,16 +52,19 @@
         let links = [];
 
         if (Array.isArray(rawLink)) {
-          links = rawLink.map(link => ({
-            text: "View Source",
-            url: typeof link === "string" ? (link.match(/\((.*?)\)/)?.[1] || link) : "#"
-          }));
+          links = rawLink
+            .map(link => {
+              const url = extractUrl(link);
+              const domain = extractDomain(url);
+              return url && domain ? { text: domain, url } : null;
+            })
+            .filter(Boolean);
         } else if (typeof rawLink === "string") {
-          links = [{
-            text: "View Source",
-            url: rawLink.match(/\((.*?)\)/)?.[1] || rawLink
-          }];
+          const url = extractUrl(rawLink);
+          const domain = extractDomain(url);
+          links = url && domain ? [{ text: domain, url }] : [];
         }
+
 
         return {
           id: r.id,
@@ -103,6 +106,53 @@
     if (!selectedCategories.length) return data;
     return data.filter(item => item.categories.some(cat => selectedCategories.includes(cat)));
   }
+
+  function extractUrl(input) {
+  if (typeof input !== "string") return null;
+
+  // If it's markdown-style, extract the URL inside ()
+  const markdownMatch = input.match(/\[.*?\]\((.*?)\)/);
+  if (markdownMatch) return markdownMatch[1];
+
+  // If it's not markdown, just extract the first http/https URL from the string
+  const fallbackMatch = input.match(/https?:\/\/[^\s)]+/);
+  return fallbackMatch ? fallbackMatch[0] : null;
+}
+
+
+  function extractDomain(url) {
+  try {
+    if (!url || !url.startsWith("http")) {
+      return null;
+    }
+
+    const parsedUrl = new URL(url);
+    let hostname = parsedUrl.hostname;
+
+    // Handle archive links
+    if (hostname === "web.archive.org") {
+      const archiveParts = parsedUrl.pathname.split("/");
+      const originalUrlPart = archiveParts.slice(3).join("/"); // remove `/web/{timestamp}/`
+      const fullOriginalUrl = originalUrlPart.startsWith("http")
+        ? originalUrlPart
+        : `https://${originalUrlPart}`;
+
+      const originalParsed = new URL(decodeURIComponent(fullOriginalUrl));
+      hostname = originalParsed.hostname;
+    }
+
+    hostname = hostname.replace(/^www\./, "");
+    const parts = hostname.split(".");
+    const rootDomain = parts.length >= 2 ? parts[parts.length - 2] : hostname;
+
+    return rootDomain;
+  } catch (error) {
+    console.error("Invalid URL in extractDomain:", url);
+    return null;
+  }
+}
+
+
 
   const groupedTimeline = groupByMonth(timelineData);
   $: uniqueCategories = Array.from(
