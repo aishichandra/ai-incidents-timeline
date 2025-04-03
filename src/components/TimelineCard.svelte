@@ -1,10 +1,19 @@
 <script>
   export let date;
   export let title;
-  export let platform;
   export let tags = [];
   export let description;
   export let links = [];
+
+
+  function isValidUrl(string) {
+    try {
+      new URL(string);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
 </script>
 
 <div class="card">
@@ -35,16 +44,22 @@
   <div class="card-right">
     <p class="card-description">{description}</p>
     {#if links.length}
-    <div class="card-links">
-      <div class="related-label">Read More</div>
-      {#each links as l}
-        <a href={l.url} class="related-link" target="_blank" rel="noopener">
-          {l.text}
-          <span class="link-host">({new URL(l.url).hostname.replace('www.', '')})</span>
-        </a>
+  <div class="card-links">
+    <!-- <div class="related-label">Read More</div> -->
+    {#if links.length > 0}
+    <ul>
+      {#each links as link}
+        <li>
+          <a href={link.url} target="_blank" rel="noopener noreferrer">
+            {link.text}
+          </a>
+        </li>
       {/each}
-    </div>
+    </ul>
   {/if}
+  </div>
+{/if}
+
   </div>
 </div>
 

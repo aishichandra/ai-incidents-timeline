@@ -3,10 +3,9 @@
   import TimelineCard from './components/TimelineCard.svelte';
   import { onMount } from 'svelte';
 
-  onMount(() => {
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
-  });
+  let timelineData = [];
+  let dropdownOpen = false;
+  let selectedCategories = [];
 
   function handleClickOutside(event) {
     if (!event.target.closest('.dropdown')) {
@@ -14,36 +13,83 @@
     }
   }
 
-  export const timelineData = [
-    {
-      date: "2024-08-08",
-      platform: "Journalist",
-      categories: ["Undisclosed AI Use", "Using AI to Fabricate Content"],
-      title: "Cody Enterprise Reporter Resigns After Caught Using AI to Fabricate Quotes",
-      description: "Reporter at the Cody Enterprise resigns after being confronted with evidence that he used generative AI to fabricate quotes in his reporting",
-      link: "https://www.powelltribune.com/stories/after-getting-caught-fabricating-quotes-cody-reporter-resigns,135514"
-    },
-    {
-      date: "2024-08-08",
-      platform: "Google / Alphabet",
-      categories: ["research/investigation", "content moderation"],
-      title: "Google delists hate speech sites in Europe",
-      description: "Harvard study finds 113 white nationalist, Nazi, anti-Semitic, and radical Islamic sites, and at least one fundamentalist Christian site, were removed from French and German Google listings.",
-      link: "https://web.archive.org/web/20240428202418/https://www.cnet.com/tech/services-and-software/google-excluding-controversial-sites/"
-    },
-    {
-      date: "2004-02-18",
-      platform: "Facebook / Meta",
-      categories: ["product"],
-      title: "Facebook launches",
-      description: "Facebook launches.",
-      link: "https://web.archive.org/web/20240428202017/https://www.thecrimson.com/article/2004/2/18/harvard-bonds-on-facebook-website-harvard/"
+  onMount(() => {
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  });
+
+  onMount(async () => {
+    try {
+      const res = await fetch(
+        "https://api.airtable.com/v0/app8ahfwVPbUKPgEz/tbl2wAKmEwGXQ8ELY",
+        {
+          headers: {
+            Authorization: "Bearer patUw9YjcnlCQoIZr.8ed788e6012e4870566558b401cc31a8304d0c360d7dcd2fefc69ad1e8f6e1af"
+          }
+        }
+      );
+
+      if (!res.ok) throw new Error(`Error fetching primary table: ${res.status}`);
+
+      const harmRes = await fetch(
+        "https://api.airtable.com/v0/app8ahfwVPbUKPgEz/tblAWw0vc5tCIhMJU",
+        {
+          headers: {
+            Authorization: "Bearer patUw9YjcnlCQoIZr.8ed788e6012e4870566558b401cc31a8304d0c360d7dcd2fefc69ad1e8f6e1af"
+          }
+        }
+      );
+
+      if (!harmRes.ok) throw new Error(`Error fetching linked table: ${harmRes.status}`);
+      
+      const records = await res.json();
+      const harmRecords = await harmRes.json();
+
+      const harmMap = new Map(harmRecords.records.map(h => [h.id, h.fields.Name || "Unknown"]));
+
+      timelineData = records.records.map(r => {
+        const rawLink = r.fields.link;
+        let links = [];
+
+        if (Array.isArray(rawLink)) {
+          links = rawLink.map(link => ({
+            text: "View Source",
+            url: typeof link === "string" ? (link.match(/\((.*?)\)/)?.[1] || link) : "#"
+          }));
+        } else if (typeof rawLink === "string") {
+          links = [{
+            text: "View Source",
+            url: rawLink.match(/\((.*?)\)/)?.[1] || rawLink
+          }];
+        }
+
+        return {
+          id: r.id,
+          date: r.fields.date || "Unknown date",
+          platform: r.fields.platform || "Unknown platform",
+          categories: r.fields.harm ? r.fields.harm.map(hid => harmMap.get(hid) || "Unknown") : [],
+          title: r.fields.title || "(Untitled)",
+          description: r.fields.desc || "(No description provided)",
+          links
+        };
+      });
+
+      timelineData = timelineData.map(item => ({
+        ...item,
+        links: item.links.map(link => ({
+          text: link.text || "View Source",
+          url: link.url || "#"
+        }))
+      }));
+    } catch (error) {
+      console.error("Failed to fetch Airtable data:", error);
     }
-  ];
+  });
 
   function groupByMonth(data) {
     const groups = {};
-    data.forEach(item => {
+    const sorted = [...data].sort((a, b) => new Date(b.date) - new Date(a.date));
+    sorted.forEach(item => {
       const month = new Date(item.date).toLocaleString('default', { month: 'long' });
       const year = new Date(item.date).getFullYear();
       const key = `${month} ${year}`;
@@ -54,23 +100,16 @@
   }
 
   function filterByCategories(data, selectedCategories) {
-    if (selectedCategories.length === 0) return data; // Show all if no category is selected
-    return data.filter(item => item.categories.some(category => selectedCategories.includes(category)));
+    if (!selectedCategories.length) return data;
+    return data.filter(item => item.categories.some(cat => selectedCategories.includes(cat)));
   }
 
   const groupedTimeline = groupByMonth(timelineData);
-
-  // Extract unique categories for the dropdown
-  const uniqueCategories = Array.from(
-    new Set(timelineData.flatMap(item => item.categories))
-  );
-
-  let selectedCategories = []; // Default to show all categories
+  $: uniqueCategories = Array.from(
+  new Set(timelineData.flatMap(item => item.categories))
+);
   let filteredData = filterByCategories(timelineData, selectedCategories);
-
   $: filteredData = filterByCategories(timelineData, selectedCategories);
-
-  let dropdownOpen = false; 
 </script>
 
 <div class="article">
@@ -104,20 +143,17 @@
     {#if dropdownOpen}
       <div class="dropdown-menu">
         {#each uniqueCategories as category}
-          <label class="dropdown-item">
-            <input
-              type="checkbox"
-              value={category}
-              on:change={(e) => {
-                if (e.target.checked) {
-                  selectedCategories = [...selectedCategories, category];
-                } else {
-                  selectedCategories = selectedCategories.filter(c => c !== category);
-                }
-              }}
-            />
-            <span>{category}</span>
-          </label>
+        <label
+          class="dropdown-item {selectedCategories.includes(category) ? 'selected' : ''}"
+        >
+          <input
+            type="checkbox"
+            value={category}
+            bind:group={selectedCategories}
+          />
+          <span>{category}</span>
+        </label>
+      
         {/each}
       </div>
     {/if}
@@ -133,7 +169,7 @@
       </div>
       <div class="timeline-divider"></div>
       <div class="month-group">
-        {#each items as item (item.date + item.title)}
+        {#each items as item (item.id)}
           <div class="card-wrapper" in:fade={{ duration: 300 }} out:fade={{ duration: 300 }}>
             <TimelineCard
               date={item.date}
@@ -141,10 +177,7 @@
               platform={item.platform}
               tags={item.categories}
               description={item.description}
-              links={[
-                { text: "Video on X", url: "https://x.com" },
-                { text: "Original slideshow on Instagram", url: "https://instagram.com" }
-              ]}
+              links={item.links}
             />
           </div>
         {/each}
@@ -200,8 +233,6 @@
   max-width: 300px; 
   padding: 1rem;
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
   margin-top: 2rem;
   margin-bottom: auto;
   margin-left: auto;
@@ -274,6 +305,8 @@
   appearance: none; 
   width: 1rem;
   height: 1rem;
+  min-width: 1rem;
+  min-height: 1rem;
   border: 1px solid #43485A; 
   background-color: white; 
   cursor: pointer;
@@ -331,7 +364,7 @@
 .timeline-divider {
   background: #43485A;
   width: 1px;
-  height: 95%;
+  height: 100%;
   /* opacity: 0.4; */
 }
 
