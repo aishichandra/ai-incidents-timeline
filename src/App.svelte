@@ -12,7 +12,6 @@
   let selectedPlatforms = [];
   let startDate = "";
   let endDate = "";
-  let sortDirection = 'desc'; // 'desc' for newest first, 'asc' for oldest first
   let searchQuery = '';
   
   let dropdownOpen = false;
@@ -22,9 +21,6 @@
 
   let sentinel;
   let observer;
-
-  const BATCH_SIZE = 20;
-  let visibleCount = BATCH_SIZE;
 
   const AIRTABLE_URL = "https://api.airtable.com/v0/appbtcs0TcBJOaflz/tbl8VV3Klj4Icfkb8";
   const AIRTABLE_HEADERS = {
@@ -134,24 +130,25 @@
     });
   }
 
-  // Update the filterByDateRange function to include sorting
   function filterByDateRange(data, start, end) {
     if (!start && !end) return data;
     
     const startTime = start ? new Date(start).getTime() : -Infinity;
     const endTime = end ? new Date(new Date(end).setHours(23, 59, 59, 999)).getTime() : Infinity;
     
-    const filteredData = data.filter(item => {
+    return data.filter(item => {
       const itemTime = new Date(item.date).getTime();
       return itemTime >= startTime && itemTime <= endTime;
     });
+  }
 
-    // Sort the filtered data in ascending order
-    return filteredData.sort((a, b) => {
-      const dateA = new Date(a.date);
-      const dateB = new Date(b.date);
-      return dateA - dateB;
-    });
+  function filterBySearch(data, query) {
+    if (!query) return data;
+    const searchTerm = query.toLowerCase();
+    return data.filter(item => 
+      item.description.toLowerCase().includes(searchTerm) ||
+      item.title.toLowerCase().includes(searchTerm)
+    );
   }
 
   function groupByMonth(data) {
@@ -165,11 +162,7 @@
 
     const sortedGroups = {};
     Object.keys(groups)
-      .sort((a, b) => {
-        const dateA = new Date(a);
-        const dateB = new Date(b);
-        return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
-      })
+      .sort((a, b) => new Date(b) - new Date(a)) // Default: most recent first
       .forEach(key => {
         sortedGroups[key] = groups[key];
       });
@@ -196,8 +189,21 @@
       showBackToTop = window.scrollY > 300;
     });
 
+    observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && hasMore && !loading) {
+          fetchNextBatch();
+        }
+      });
+    });
+
+    if (sentinel) {
+      observer.observe(sentinel);
+    }
+
     return () => {
       document.removeEventListener('click', handleClickOutside);
+      if (observer && sentinel) observer.unobserve(sentinel);
     };
   });
 
@@ -218,35 +224,7 @@
     searchQuery
   );
 
-  $: visibleCount = BATCH_SIZE;
-
-  $: sortedFilteredData = [...filteredData].sort((a, b) => {
-    const dateA = new Date(a.date);
-    const dateB = new Date(b.date);
-    return sortDirection === 'desc' ? dateB - dateA : dateA - dateB;
-  });
-
-  $: paginatedData = sortedFilteredData.slice(0, visibleCount);
-
-
-  $: groupedData = groupByMonth(paginatedData);
-
-
-  $: {
-    if (startDate || endDate) {
-      sortDirection = 'asc'; // Switch to ascending order when date filters are active
-    }
-  }
-
-  // Add with other filter functions
-  function filterBySearch(data, query) {
-    if (!query) return data;
-    const searchTerm = query.toLowerCase();
-    return data.filter(item => 
-      item.description.toLowerCase().includes(searchTerm) ||
-      item.title.toLowerCase().includes(searchTerm)
-    );
-  }
+  $: groupedData = groupByMonth(filteredData);
 </script>
 
 
@@ -254,7 +232,7 @@
 
     <h1 class="article-title">Tow Platforms and Publishers Timeline    </h1>
 
-    <!-- <p class="article-intro">
+    <p class="article-intro">
       The timeline below identifies key developments in the relationship between technology platforms and news publishers. Though this timeline was originally created to monitor shifts and trends in the social media platform landscape, it has been expanded to also incorporate developments related to artificial intelligence technologies.
     </p>
 
@@ -305,7 +283,7 @@
 
 
 
-    </p> -->
+    </p>
   
 </div>
 
