@@ -68,7 +68,7 @@
 .card {
   width: 100%;
   padding: 2rem;
-  border: 1px solid #43485A;
+  border: 1px solid #d6613b;
   background-color: white;
   box-shadow: 5px 5px 0 0 #d6613b;
   display: flex;
@@ -79,6 +79,7 @@
 }
 
 .card-date {
+  font-family: 'Helvetica Neue', sans-serif;
   font-size: 0.75rem;
   font-weight: 600;
   color: #43485A;
@@ -156,12 +157,13 @@
 }
 
 .tag {
+  font-family: 'Helvetica Neue', sans-serif;
   font-size: 0.75rem;
   background-color: rgb(214, 97, 59, 0.2);
   color: #43485A;
   padding: 0.35rem 0.75rem;
   border: 1px solid #d6613b;
-  font-weight: 500;
+  /* font-weight: 500; */
 }
 
 .card-right {
@@ -173,7 +175,7 @@
 }
 
 .card-description {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   line-height: 1.7;
   margin-bottom: 1.5rem;
 }
@@ -181,11 +183,13 @@
 .card-links {
   /* border-top: 1px solid #D9626B; */
   padding-top: 1rem;
+  
 }
 
 .related-label {
   font-size: 0.75rem;
-  font-weight: 600;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-weight: 400;
   color: #6b7280;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
@@ -194,7 +198,8 @@
 
 .related-link {
   display: block;
-  font-size: 0.875rem;
+  /* font-family: 'Helvetica Neue', sans-serif; */
+  font-size: 1.1rem;
   color: #D9626B;
   text-decoration: underline;
   margin-bottom: 0.5rem;
@@ -235,8 +240,8 @@
 
 .section-label {
   display: block;
-  font-size: 0.75rem;
-  font-weight: 600;
+  font-family: 'Helvetica Neue', sans-serif;
+  font-size: 0.7rem;
   color: #6b7280;
   text-transform: uppercase;
   letter-spacing: 0.04em;
@@ -250,12 +255,13 @@
 }
 
 .platform-tag {
+  font-family: 'Helvetica Neue', sans-serif;
   font-size: 0.75rem;
   background-color: rgba(67, 72, 90, 0.1);
   color: #43485A;
   padding: 0.35rem 0.75rem;
   border: 1px solid #43485A;
-  font-weight: 500;
+  /* font-weight: 500; */
 }
 
 </style>

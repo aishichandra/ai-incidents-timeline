@@ -42,28 +42,6 @@
       margin-top: 10px;
     }
   
-    .tooltip.bottom::before {
-      content: "";
-      position: absolute;
-      top: -6px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 6px;
-      border-style: solid;
-      border-color: transparent transparent #43485A transparent;
-    }
-  
-    .tooltip.bottom::after {
-      content: "";
-      position: absolute;
-      top: -5px;
-      left: 50%;
-      transform: translateX(-50%);
-      border-width: 5px;
-      border-style: solid;
-      border-color: transparent transparent white transparent;
-    }
-  
     .tooltip-container:hover .tooltip {
       visibility: visible;
       opacity: 1;
