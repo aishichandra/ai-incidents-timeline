@@ -299,7 +299,7 @@
 
 <div class="article">
 
-    <h1 class="article-title">Tow Center <br/>Platforms and Publishers Timeline</h1>
+    <h1 class="article-title"><span id= "title-style">The Tow Center for Digital Journalism's </span> <br/>Platforms and Publishers Timeline</h1>
 
     <p class="article-intro">
       The timeline below, compiled by the Tow Center for Digital Journalism, identifies key developments in the relationship between technology platforms and news publishers.
@@ -320,7 +320,7 @@
     </p>
 
     <p class="article-intro">
-      You can filter the timeline to search by specific platforms. Updates that pertain broadly to social platforms, AI companies, or newsroom tools are categorized under those respective platform groupings:
+      You can also filter the timeline to search by specific platforms. Updates that pertain broadly to social platforms, AI companies, or newsroom tools are categorized under those respective platform groupings:
       <span class="platform-tags">
       <Tooltip text="Updates that apply to the overall landscape of mainstream social media platforms like Facebook, Twitter, Instagram, etc.">
         <span class="platform-tag">social platforms</span>
@@ -338,7 +338,7 @@
     
 
     <p class="article-intro">
-      This timeline is currently maintained by Klaudia Jaźwińska and will be updated at the beginning of every month. We welcome feedback or input on any missed developments.
+      This timeline is currently maintained by <a href= "https://towcenter.columbia.edu/content/klaudia-jazwinska" > Klaudia Jaźwińska </a> and will be updated at the beginning of every month. We welcome feedback or input on any missed developments.
     </p>
   
 </div>
@@ -536,15 +536,16 @@
   }
 
   .article-title {
-  font-family: "Helvetica Neue", sans-serif;
-  font-size: 3rem;
-  line-height: 1.1;
-  font-weight: 800;
-  margin-bottom: 2rem;
-  color: #d6613b;
-  text-align: left;
-  letter-spacing: -0.02em;
-}
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 3.4rem;
+    line-height: 1.2;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    color: #d6613b;
+    text-align: left;
+    letter-spacing: -0.02em;
+    margin-bottom: 2rem;
+  }
 
   .article-intro {
     font-size: 1.125rem;
@@ -845,6 +846,18 @@
     color: #d6613b;
   }
 
+  /* id title-style */
+  #title-style {
+    font-family: 'EB Garamond', serif;
+    /* italic */
+    /* font-style: italic; */
+    font-size: 2rem;
+    font-weight: 400;
+    color: #d6613b;
+    text-align: left;
+    letter-spacing: 0em;
+  }
+
   /* Export Button */
   .export-container {
     flex: 1;
@@ -989,6 +1002,21 @@
 .export-button:hover:not(:disabled) {
   background-color: rgba(214, 97, 59, 0.1);
 }
+
+/* a  */
+
+.article-intro a {
+    color: #d6613b;
+    text-decoration: none;
+    font-weight: 600;
+  }
+
+  .article-intro a:hover {
+    text-decoration: underline;
+  }
+
+
+
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
