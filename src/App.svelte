@@ -578,7 +578,6 @@
     font-size: 0.75rem;
     font-family: "Helvetica Neue", sans-serif;
     padding: 0.15rem 0.75rem;
-    border: 1px solid #43485A;
     color: #43485A;
     cursor: help;
     display: inline-block;
@@ -587,10 +586,12 @@
 
   .category-tag {
     background-color: rgb(214, 97, 59, 0.2);
+    border: 1px solid rgba(214, 97, 59);
   }
 
   .platform-tag {
     background-color: rgba(67, 72, 90, 0.1);
+    border: 1px solid rgba(67, 72, 90);
   }
 
   .category-tag:hover,
@@ -598,7 +599,7 @@
     transform: translateY(-1px);
     box-shadow: 3px 3px 0 0 #d6613b;
     background-color: white;
-    font-weight: 500;
+    /* font-weight: 500; */
   }
   
 

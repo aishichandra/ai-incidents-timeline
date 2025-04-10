@@ -15,7 +15,7 @@
         position: relative;
         display: inline-block;
         font-family: 'Helvetica Neue', sans-serif;
-        font-weight: 500;
+        /* font-weight: 500; */
     }
 
     .tooltip {
@@ -48,6 +48,7 @@
     .tooltip-container:hover .tooltip {
         visibility: visible;
         opacity: 1;
+        
     }
 
     @media (max-width: 768px) {
