@@ -298,49 +298,62 @@
 </script>
 
 <div class="article">
+  <div class="header">
+    <div class="title-container">
+      <div class="title-row">
+        <div class="logo">
+          <img src="/public/Tow Center Logo.webp" alt="Tow Center Logo" />
+        </div>
+        <span id="title-style">Tow Center for Digital Journalism's</span>
+      </div>
+      <h1 class="article-title">Platforms and Publishers Timeline</h1>
+    </div>
+  </div>
 
-    <h1 class="article-title"><span id= "title-style">The Tow Center for Digital Journalism's </span> <br/>Platforms and Publishers Timeline</h1>
+  <p class="article-intro">
+    The timeline below, compiled by the Tow Center for Digital Journalism, identifies key developments in the relationship between technology platforms and news publishers. 
+  </p>
 
-    <p class="article-intro">
-      The timeline below, compiled by the Tow Center for Digital Journalism, identifies key developments in the relationship between technology platforms and news publishers.
+  <p class="article-intro">
+    This timeline contains updates related to the following categories, as they relate to platforms and publishers:
+    <span class="category-tags">
+      {#each Object.entries(categoryDefinitions) as [category, definition]}
+        <Tooltip text={definition}>
+          <span class="category-tag">
+            {category}
+          </span>
+        </Tooltip>
+      {/each}
+    </span>
+  </p>
+
+  <p class="article-intro">
+    You can filter by any of the categories above. You can also filter the timeline to search by specific platforms. Updates that pertain broadly to social platforms, AI companies, or newsroom tools are categorized under those respective platform groupings:
+    <span class="platform-tags">
+    <Tooltip text="Updates that apply to the overall landscape of mainstream social media platforms like Facebook, Twitter, Instagram, etc.">
+      <span class="platform-tag">social platforms</span>
+    </Tooltip>
+    <Tooltip text="Developments affecting AI providers as a whole, such as OpenAI, Anthropic, or Google AI">
+      <span class="platform-tag">AI companies</span>
+    </Tooltip>
+    <Tooltip text="Technology initiatives and tools developed internally by newsrooms, such as CMS updates or automation workflows">
+      <span class="platform-tag">newsroom tools</span>
+    </Tooltip>
+    </span>
+  </p>
+
+  <p class="article-intro">
+    The timeline, which begins in October 2000, is currently maintained by <a href="https://towcenter.columbia.edu/content/klaudia-jazwinska">Klaudia Jaźwińska</a> and is updated at the beginning of each month. We welcome any feedback or suggestions regarding missed developments.
+  </p>
+
+  <div class="article-footer">
+    <a href="https://www.towcenter.org/category/platforms-and-publishers/" class="report-button">
+      Read our full reports
+    </a>
+    <p class="update-date">
+      Updated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
     </p>
-
-    <p class="article-intro">
-      This timeline contains updates related to the following categories, as they relate to platforms and publishers:
-      <span class="category-tags">
-        {#each Object.entries(categoryDefinitions) as [category, definition]}
-          <Tooltip text={definition}>
-            <span class="category-tag">
-              {category}
-            </span>
-          </Tooltip>
-        {/each}
-      </span>
-
-    </p>
-
-    <p class="article-intro">
-      You can also filter the timeline to search by specific platforms. Updates that pertain broadly to social platforms, AI companies, or newsroom tools are categorized under those respective platform groupings:
-      <span class="platform-tags">
-      <Tooltip text="Updates that apply to the overall landscape of mainstream social media platforms like Facebook, Twitter, Instagram, etc.">
-        <span class="platform-tag">social platforms</span>
-      </Tooltip>
-      <Tooltip text="Developments affecting AI providers as a whole, such as OpenAI, Anthropic, or Google AI">
-        <span class="platform-tag">AI companies</span>
-      </Tooltip>
-      <Tooltip text="Technology initiatives and tools developed internally by newsrooms, such as CMS updates or automation workflows">
-        <span class="platform-tag">newsroom tools</span>
-      </Tooltip>
-      </span>
-
-    </p>
-    
-    
-
-    <p class="article-intro">
-      This timeline is currently maintained by <a href= "https://towcenter.columbia.edu/content/klaudia-jazwinska" > Klaudia Jaźwińska </a> and will be updated at the beginning of every month. We welcome feedback or input on any missed developments.
-    </p>
-  
+  </div>
 </div>
 
 <div class="filters">
@@ -524,7 +537,7 @@
     background: #fff;
     color: #333;
     font-family: "EB Garamond", serif;
-    font-size: 16px;
+    font-size: 20px;
     line-height: 1.5;
     margin: 0;
     padding: 0;
@@ -551,12 +564,47 @@
   }
 
   .article-intro {
-    font-size: 1.125rem;
+    font-size: 1.2rem;
     font-weight: 400;
     color: #333;
     margin-bottom: 1.5rem;
     text-align: left;
     line-height: 1.8rem;
+  }
+
+  .article-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+    margin: 2rem 0;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(67, 72, 90, 0.1);
+  }
+
+  .report-button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background-color: #d6613b;
+    color: white;
+    text-decoration: none;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    border: 1px solid #d6613b;
+  }
+
+  .report-button:hover {
+    background-color: white;
+    color: #d6613b;
+  }
+
+  .update-date {
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 0.875rem;
+    color: #43485A;
+    margin: 0;
   }
 
   /* Tags Styling */
@@ -585,6 +633,7 @@
     cursor: help;
     display: inline-block;
     transition: all 0.2s ease;
+    
   }
 
   .category-tag {
@@ -602,7 +651,7 @@
     transform: translateY(-1px);
     box-shadow: 3px 3px 0 0 #d6613b;
     background-color: white;
-    /* font-weight: 500; */
+    font-weight: 500;
   }
   
 
@@ -1044,6 +1093,69 @@
   pointer-events: none;
 }
 
+  /* Add these styles */
+  .header {
+    margin-bottom: 2rem;
+  }
+
+  .title-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .title-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .logo {
+    flex-shrink: 0;
+    width: 120px; 
+  }
+
+  .logo img {
+    width: 100%;
+    height: auto;
+  }
+
+  #title-style {
+    font-family: 'EB Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 400;
+    color: #d6613b;
+  }
+
+  .article-title {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: 3rem;
+    line-height: 1.2;
+    font-weight: 800;
+    color: #d6613b;
+    margin: 0;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .title-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .logo {
+      width: 50px;
+    }
+
+    #title-style {
+      font-size: 1.25rem;
+    }
+
+    .article-title {
+      font-size: 2rem;
+    }
+  }
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
