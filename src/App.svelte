@@ -343,129 +343,132 @@
   
 </div>
 
-<div class="filter-container">
-  <div class="dropdown date-filter">
-    <div class="dropdown-header" on:click={() => (dateFilterOpen = !dateFilterOpen)}>
-      {#if startDate || endDate}
-        Date: {startDate ? new Date(startDate).toLocaleDateString() : 'Start'} - 
-             {endDate ? new Date(endDate).toLocaleDateString() : 'End'}
-      {:else}
-        Filter by Date
-      {/if}
-      <span class="dropdown-arrow">{dateFilterOpen ? "▲" : "▼"}</span>
-    </div>
-    
-    {#if dateFilterOpen}
-      <div class="dropdown-menu date-menu">
-        <div class="date-inputs">
-          <label>
-            Start Date
-            <input type="date" bind:value={startDate} />
-          </label>
-          <label>
-            End Date
-            <input 
-              type="date" 
-              bind:value={endDate}
-              min={startDate} 
-            />
-          </label>
-        </div>
+<div class="filters">
+  <div class="filter-container">
+    <div class="dropdown date-filter">
+      <div class="dropdown-header" on:click={() => (dateFilterOpen = !dateFilterOpen)}>
         {#if startDate || endDate}
-          <button class="clear-button" on:click={() => { startDate = ""; endDate = ""; }}>
-            Clear Dates
-          </button>
+          Date: {startDate ? new Date(startDate).toLocaleDateString() : 'Start'} - 
+              {endDate ? new Date(endDate).toLocaleDateString() : 'End'}
+        {:else}
+          Filter by Date
         {/if}
+        <span class="dropdown-arrow">{dateFilterOpen ? "▲" : "▼"}</span>
       </div>
-    {/if}
-  </div>
-  <div class="dropdown">
-    <div class="dropdown-header" on:click={() => (dropdownOpen = !dropdownOpen)}>
-      {#if selectedCategories.length > 0}
-      Categories: {selectedCategories
-        .slice()
-        .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
-        .join(", ")}
-      {:else}
-        Filter Categories
-      {/if}
-      <span class="dropdown-arrow">{dropdownOpen ? "▲" : "▼"}</span>
-    </div>
-    {#if dropdownOpen}
-      <div class="dropdown-menu">
-        {#each uniqueCategories as category}
-        <label
-          class="dropdown-item {selectedCategories.includes(category) ? 'selected' : ''}"
-        >
-          <input
-            type="checkbox"
-            value={category}
-            bind:group={selectedCategories}
-          />
-          <span>{category}</span>
-        </label>
       
-        {/each}
-      </div>
-    {/if}
-  </div>
-
-  <div class="dropdown">
-    <div class="dropdown-header" on:click={() => (platformDropdownOpen = !platformDropdownOpen)}>
-      {#if selectedPlatforms.length > 0}
-        Platforms: {selectedPlatforms.slice().sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).join(", ")}
-      {:else}
-        Filter Platforms
+      {#if dateFilterOpen}
+        <div class="dropdown-menu date-menu">
+          <div class="date-inputs">
+            <label>
+              Start Date
+              <input type="date" bind:value={startDate} />
+            </label>
+            <label>
+              End Date
+              <input 
+                type="date" 
+                bind:value={endDate}
+                min={startDate} 
+              />
+            </label>
+          </div>
+          {#if startDate || endDate}
+            <button class="clear-button" on:click={() => { startDate = ""; endDate = ""; }}>
+              Clear Dates
+            </button>
+          {/if}
+        </div>
       {/if}
-      <span class="dropdown-arrow">{platformDropdownOpen ? "▲" : "▼"}</span>
     </div>
-    {#if platformDropdownOpen}
-      <div class="dropdown-menu">
-        {#each uniquePlatforms as platform}
-          <label class="dropdown-item">
-            <input type="checkbox" value={platform} bind:group={selectedPlatforms} />
-            <span>{platform}</span>
-          </label>
-        {/each}
+    <div class="dropdown">
+      <div class="dropdown-header" on:click={() => (dropdownOpen = !dropdownOpen)}>
+        {#if selectedCategories.length > 0}
+        Categories: {selectedCategories
+          .slice()
+          .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
+          .join(", ")}
+        {:else}
+          Filter Categories
+        {/if}
+        <span class="dropdown-arrow">{dropdownOpen ? "▲" : "▼"}</span>
       </div>
-    {/if}
+      {#if dropdownOpen}
+        <div class="dropdown-menu">
+          {#each uniqueCategories as category}
+          <label
+            class="dropdown-item {selectedCategories.includes(category) ? 'selected' : ''}"
+          >
+            <input
+              type="checkbox"
+              value={category}
+              bind:group={selectedCategories}
+            />
+            <span>{category}</span>
+          </label>
+        
+          {/each}
+        </div>
+      {/if}
+    </div>
+
+    <div class="dropdown">
+      <div class="dropdown-header" on:click={() => (platformDropdownOpen = !platformDropdownOpen)}>
+        {#if selectedPlatforms.length > 0}
+          Platforms: {selectedPlatforms.slice().sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase())).join(", ")}
+        {:else}
+          Filter Platforms
+        {/if}
+        <span class="dropdown-arrow">{platformDropdownOpen ? "▲" : "▼"}</span>
+      </div>
+      {#if platformDropdownOpen}
+        <div class="dropdown-menu">
+          {#each uniquePlatforms as platform}
+            <label class="dropdown-item">
+              <input type="checkbox" value={platform} bind:group={selectedPlatforms} />
+              <span>{platform}</span>
+            </label>
+          {/each}
+        </div>
+      {/if}
+    </div>
+
+    
   </div>
 
-  
-</div>
+  <div class="search-container">
+    <div class="search-wrapper">
+      <input
+        type="text"
+        bind:value={searchQuery}
+        placeholder="Search in timeline..."
+        class="search-input"
+      />
+      {#if searchQuery}
+        <button 
+          class="clear-search" 
+          on:click={() => searchQuery = ''}
+          aria-label="Clear search"
+        >
+          ✕
+        </button>
+      {/if}
+    </div>
 
-<div class="search-container">
-  <div class="search-wrapper">
-    <input
-      type="text"
-      bind:value={searchQuery}
-      placeholder="Search in timeline..."
-      class="search-input"
-    />
-    {#if searchQuery}
+    <div class="export-container">
       <button 
-        class="clear-search" 
-        on:click={() => searchQuery = ''}
-        aria-label="Clear search"
+        class="export-button"
+        on:click={() => exportToCSV(filteredData)}
+        disabled={filteredData.length === 0}
       >
-        ✕
+        {filteredData.length === 0 
+          ? 'No data to export' 
+          : `Export ${filteredData.length} items to CSV`}
       </button>
-    {/if}
-  </div>
 
-  <div class="export-container">
-    <button 
-      class="export-button"
-      on:click={() => exportToCSV(filteredData)}
-      disabled={filteredData.length === 0}
-    >
-      {filteredData.length === 0 
-        ? 'No data to export' 
-        : `Export ${filteredData.length} items to CSV`}
-    </button>
-
+    </div>
   </div>
 </div>
+
 
 <div class="timeline-container">
   {#each Object.entries(groupByMonth(filteredData)) as [monthYear, items]}
@@ -607,7 +610,7 @@
   .timeline-container {
     max-width: 900px;
     margin: 0 auto;
-    padding: 4rem 1rem;
+    padding: 2rem 1rem 4rem; /* Reduced top padding */
   }
 
   .timeline-row {
@@ -632,11 +635,14 @@
     color: #111;
     text-transform: capitalize;
     position: sticky;
-    top: 2rem;
+    top: calc(200px + 1rem); /* Adjust this value based on your filters' height */
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     padding-right: 0.5rem;
+    z-index: 900; 
+    padding-top: 1.5rem; 
+        
   }
 
   .year-label {
@@ -1016,7 +1022,27 @@
     text-decoration: underline;
   }
 
+/* Update the filters container */
+.filters {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1000;
+  padding: 1rem 0;
+  border-bottom: 1px solid rgba(67, 72, 90, 0.1);
+  margin-bottom: 2rem;
+}
 
+/* Add shadow to filters when scrolling */
+.filters::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  pointer-events: none;
+}
 
 </style>
 
