@@ -3,7 +3,7 @@
   import { fade } from 'svelte/transition';
   import TimelineCard from './components/TimelineCard.svelte';
   import Tooltip from './components/Tooltip.svelte';
-
+  
   let timelineData = [];
   let offset = null;
   let loading = false;
@@ -14,6 +14,7 @@
   let startDate = "";
   let endDate = "";
   let searchQuery = '';
+  let debouncedSearchQuery = '';
 
   let dropdownOpen = false;
   let platformDropdownOpen = false;
@@ -57,6 +58,8 @@
     Authorization: "Bearer patUw9YjcnlCQoIZr.8ed788e6012e4870566558b401cc31a8304d0c360d7dcd2fefc69ad1e8f6e1af"
   };
 
+  
+
   function extractUrl(input) {
     if (typeof input !== "string") return null;
     const markdownMatch = input.match(/\[.*?\]\((.*?)\)/);
@@ -83,6 +86,38 @@
     }
   }
 
+  function processLinks(rawLink) {
+    let links = [];
+
+    if (Array.isArray(rawLink)) {
+      links = rawLink.map(link => {
+        const url = extractUrl(link);
+        const domain = extractDomain(url);
+        return url && domain ? { text: domain, url } : null;
+      }).filter(Boolean);
+    } else if (typeof rawLink === "string") {
+      const url = extractUrl(rawLink);
+      const domain = extractDomain(url);
+      links = url && domain ? [{ text: domain, url }] : [];
+    }
+
+    return links;
+  }
+
+  function processRecords(records) {
+    return records
+      .filter(r => r.fields && r.fields.date && r.fields.desc)
+      .map(r => ({
+        id: r.id,
+        date: r.fields.date || "Unknown date",
+        platform: r.fields.platform || "Unknown platform",
+        categories: Array.isArray(r.fields.category) ? r.fields.category : [r.fields.category].filter(Boolean),
+        title: r.fields['AI incident title'] || "(Untitled)",
+        description: r.fields.desc || "(No description provided)",
+        links: processLinks(r.fields.source_url_1)
+      }));
+  }
+
   async function fetchNextBatch() {
     if (loading || !hasMore) return;
     loading = true;
@@ -90,7 +125,7 @@
       const url = new URL(AIRTABLE_URL);
       if (offset) url.searchParams.append("offset", offset);
       url.searchParams.append("view", "viwlZ0icRGkfLhux6");
-      url.searchParams.append("pageSize", 20);
+      url.searchParams.append("pageSize", 100);
 
       const res = await fetch(url.toString(), { headers: AIRTABLE_HEADERS });
 
@@ -100,37 +135,7 @@
 
       const data = await res.json();
 
-      const newRecords = data.records
-        .filter(r => r.fields.date && r.fields.desc)
-        .map(r => {
-          const rawLink = r.fields.source_url_1;
-          let links = [];
-
-          if (Array.isArray(rawLink)) {
-            links = rawLink.map(link => {
-              const url = extractUrl(link);
-              const domain = extractDomain(url);
-              return url && domain ? { text: domain, url } : null;
-            }).filter(Boolean);
-          } else if (typeof rawLink === "string") {
-            const url = extractUrl(rawLink);
-            const domain = extractDomain(url);
-            links = url && domain ? [{ text: domain, url }] : [];
-          }
-
-          return {
-            id: r.id,
-            date: r.fields.date || "Unknown date",
-            platform: r.fields.platform || "Unknown platform",
-            categories: r.fields.category || [],
-            title: r.fields['AI incident title'] || "(Untitled)",
-            description: r.fields.desc || "(No description provided)",
-            links: links.map(link => ({
-              text: link.text || "View Source",
-              url: link.url || "#"
-            }))
-          };
-        });
+      const newRecords = processRecords(data.records);
 
       timelineData = [...timelineData, ...newRecords];
       offset = data.offset;
@@ -147,18 +152,26 @@
     offset = null;
     hasMore = true;
     timelineData = [];
+
     while (hasMore) {
       await fetchNextBatch();
     }
+
+    // Save to cache
+    localStorage.setItem("timelineCache", JSON.stringify(timelineData));
+    localStorage.setItem("timelineCacheTimestamp", Date.now());
   }
 
   function filterByCategories(data, selected) {
-    if (!selected.length) return data;
-    return data.filter(item => item.categories.some(cat => selected.includes(cat)));
+    if (!selected || selected.length === 0) return data;
+    return data.filter(item => {
+      const itemCategories = Array.isArray(item.categories) ? item.categories : [item.categories];
+      return itemCategories.some(cat => selected.includes(cat));
+    });
   }
 
   function filterByPlatforms(data, selected) {
-    if (!selected.length) return data;
+    if (!selected || selected.length === 0) return data;
     return data.filter(item => {
       const platforms = Array.isArray(item.platform) ? item.platform : [item.platform];
       return platforms.some(p => selected.includes(p));
@@ -167,22 +180,26 @@
 
   function filterByDateRange(data, start, end) {
     if (!start && !end) return data;
-
-    const startTime = start ? new Date(start).getTime() : -Infinity;
-    const endTime = end ? new Date(new Date(end).setHours(23, 59, 59, 999)).getTime() : Infinity;
-
+    
+    const startDate = start ? new Date(start).setHours(0, 0, 0, 0) : -Infinity;
+    const endDate = end ? new Date(end).setHours(23, 59, 59, 999) : Infinity;
+    
     return data.filter(item => {
-      const itemTime = new Date(item.date).getTime();
-      return itemTime >= startTime && itemTime <= endTime;
+      const itemDate = new Date(item.date).getTime();
+      return itemDate >= startDate && itemDate <= endDate;
     });
   }
 
   function filterBySearch(data, query) {
-    if (!query) return data;
-    const searchTerm = query.toLowerCase();
-    return data.filter(item =>
-      item.description.toLowerCase().includes(searchTerm) ||
-      item.title.toLowerCase().includes(searchTerm)
+    if (!query || query.trim() === '') return data;
+    const searchTerm = query.toLowerCase().trim();
+    return data.filter(item => 
+      item.description?.toLowerCase().includes(searchTerm) ||
+      item.title?.toLowerCase().includes(searchTerm) ||
+      item.platform?.toLowerCase().includes(searchTerm) ||
+      (Array.isArray(item.categories) && item.categories.some(cat => 
+        cat.toLowerCase().includes(searchTerm)
+      ))
     );
   }
 
@@ -211,6 +228,22 @@
       platformDropdownOpen = false;
       dateFilterOpen = false;
     }
+  }
+
+  function loadFromCache() {
+    const cached = localStorage.getItem("timelineCache");
+    const timestamp = localStorage.getItem("timelineCacheTimestamp");
+
+    if (cached && timestamp) {
+      const ageInMinutes = (Date.now() - Number(timestamp)) / 1000 / 60;
+      if (ageInMinutes < 60) {  // Customize cache duration
+        timelineData = JSON.parse(cached);
+        hasMore = false;
+        return true;
+      }
+    }
+
+    return false;
   }
 
   function scrollToTop() {
@@ -250,7 +283,11 @@
   }
 
   onMount(() => {
-    fetchAllData();
+    const usedCache = loadFromCache();
+    if (!usedCache) {
+      fetchAllData();
+    }
+
     document.addEventListener('click', handleClickOutside);
     window.addEventListener('scroll', () => {
       showBackToTop = window.scrollY > 300;
@@ -274,6 +311,7 @@
     };
   });
 
+
   $: uniqueCategories = Array.from(new Set(timelineData.flatMap(item => item.categories)));
   $: uniquePlatforms = Array.from(new Set(timelineData.flatMap(item =>
     Array.isArray(item.platform) ? item.platform : [item.platform]
@@ -288,10 +326,25 @@
       startDate,
       endDate
     ),
-    searchQuery
+    searchQuery?.trim()
   );
 
   $: groupedData = groupByMonth(filteredData);
+
+  $: if (!timelineData.length) {
+    selectedCategories = [];
+    selectedPlatforms = [];
+    searchQuery = '';
+    startDate = '';
+    endDate = '';
+  }
+
+  $: latestDate = timelineData.length ? 
+    timelineData.reduce((latest, item) => {
+      const itemDate = new Date(item.date);
+      return itemDate > latest ? itemDate : latest;
+    }, new Date(0)).toISOString().split('T')[0] : 
+    new Date().toISOString().split('T')[0];
 </script>
 
 <div class="article">
@@ -313,7 +366,7 @@
           </Tooltip>
         {/each}
       </span>
-      You can learn more about how we define our categories <a href="#" class="category-link">here</a>.
+
     </p>
 
     <p class="article-intro">
@@ -346,7 +399,11 @@
         <div class="date-inputs">
           <label>
             Start Date
-            <input type="date" bind:value={startDate} />
+            <input 
+              type="date" 
+              bind:value={startDate}
+              max={latestDate} 
+            />
           </label>
           <label>
             End Date
@@ -354,6 +411,7 @@
               type="date" 
               bind:value={endDate}
               min={startDate} 
+              max={latestDate}
             />
           </label>
         </div>
