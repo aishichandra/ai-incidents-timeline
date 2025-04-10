@@ -302,7 +302,7 @@
     <div class="title-container">
       <div class="title-row">
         <div class="logo">
-          <img src="/public/Tow Center Logo.webp" alt="Tow Center Logo" />
+          <img src="Tow Center Logo.webp" alt="Tow Center Logo" />
         </div>
         <span id="title-style">Tow Center for Digital Journalism's</span>
       </div>
@@ -311,7 +311,7 @@
   </div>
 
   <p class="article-intro">
-    The timeline below, compiled by the Tow Center for Digital Journalism, identifies key developments in the relationship between technology platforms and news publishers. 
+    The timeline below, compiled by the Tow Center for Digital Journalism <a href="https://towcenter.columbia.edu/news/platforms-and-publishers" >as part of the Platforms and Publishers project</a>, identifies key developments in the relationship between technology platforms and news publishers. 
   </p>
 
   <p class="article-intro">
@@ -347,9 +347,7 @@
   </p>
 
   <div class="article-footer">
-    <a href="https://www.towcenter.org/category/platforms-and-publishers/" class="report-button">
-      Read our full reports
-    </a>
+
     <p class="update-date">
       Updated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
     </p>
