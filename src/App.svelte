@@ -8,6 +8,7 @@
   let offset = null;
   let loading = false;
   let hasMore = true;
+  let lastUpdatedDate = null; 
 
   let selectedCategories = [];
   let selectedPlatforms = [];
@@ -59,6 +60,9 @@
     Authorization: "Bearer patUw9YjcnlCQoIZr.8ed788e6012e4870566558b401cc31a8304d0c360d7dcd2fefc69ad1e8f6e1af"
   };
 
+  let mostRecentUpdate = null;
+
+
   function extractUrl(input) {
     if (typeof input !== "string") return null;
     const markdownMatch = input.match(/\[.*?\]\((.*?)\)/);
@@ -86,64 +90,68 @@
   }
 
   async function fetchNextBatch() {
-    if (loading || !hasMore) return;
-    loading = true;
-    try {
-      const url = new URL(AIRTABLE_URL);
-      if (offset) url.searchParams.append("offset", offset);
-      url.searchParams.append("view", "viwlZ0icRGkfLhux6");
-      url.searchParams.append("pageSize", 100);
+  if (loading || !hasMore) return;
+  loading = true;
+  try {
+    const url = new URL(AIRTABLE_URL);
+    if (offset) url.searchParams.append("offset", offset);
+    url.searchParams.append("view", "viwlZ0icRGkfLhux6");
+    url.searchParams.append("pageSize", 100);
 
-      const res = await fetch(url.toString(), { headers: AIRTABLE_HEADERS });
+    const res = await fetch(url.toString(), { headers: AIRTABLE_HEADERS });
+    if (!res.ok) throw new Error(`Error fetching Airtable data: ${res.status}`);
+    const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(`Error fetching Airtable data: ${res.status}`);
-      }
+    const newRecords = data.records
+      .filter(r => r.fields.date && r.fields.desc)
+      .map(r => {
+        const rawLink = r.fields.source_url_1;
+        let links = [];
 
-      const data = await res.json();
-
-      const newRecords = data.records
-        .filter(r => r.fields.date && r.fields.desc)
-        .map(r => {
-          const rawLink = r.fields.source_url_1;
-          let links = [];
-
-          if (Array.isArray(rawLink)) {
-            links = rawLink.map(link => {
-              const url = extractUrl(link);
-              const domain = extractDomain(url);
-              return url && domain ? { text: domain, url } : null;
-            }).filter(Boolean);
-          } else if (typeof rawLink === "string") {
-            const url = extractUrl(rawLink);
+        if (Array.isArray(rawLink)) {
+          links = rawLink.map(link => {
+            const url = extractUrl(link);
             const domain = extractDomain(url);
-            links = url && domain ? [{ text: domain, url }] : [];
+            return url && domain ? { text: domain, url } : null;
+          }).filter(Boolean);
+        } else if (typeof rawLink === "string") {
+          const url = extractUrl(rawLink);
+          const domain = extractDomain(url);
+          links = url && domain ? [{ text: domain, url }] : [];
+        }
+
+        // update last updated tracker
+        if (r.fields.last_updated) {
+          const recordUpdated = new Date(r.fields.last_updated);
+          if (!lastUpdatedDate || recordUpdated > new Date(lastUpdatedDate)) {
+            lastUpdatedDate = recordUpdated.toISOString();
           }
+        }
 
-          return {
-            id: r.id,
-            date: r.fields.date || "Unknown date",
-            platform: r.fields.platform || "Unknown platform",
-            categories: r.fields.category || [],
-            title: r.fields['AI incident title'] || "(Untitled)",
-            description: r.fields.desc || "(No description provided)",
-            links: links.map(link => ({
-              text: link.text || "View Source",
-              url: link.url || "#"
-            }))
-          };
-        });
+        return {
+          id: r.id,
+          date: r.fields.date || "Unknown date",
+          platform: r.fields.platform || "Unknown platform",
+          categories: r.fields.category || [],
+          title: r.fields['AI incident title'] || "(Untitled)",
+          description: r.fields.desc || "(No description provided)",
+          links: links.map(link => ({
+            text: link.text || "View Source",
+            url: link.url || "#"
+          }))
+        };
+      });
 
-      timelineData = [...timelineData, ...newRecords];
-      offset = data.offset;
-      hasMore = Boolean(data.offset);
-    } catch (err) {
-      console.error("Error fetching batch:", err);
-      hasMore = false;
-    } finally {
-      loading = false;
-    }
+    timelineData = [...timelineData, ...newRecords];
+    offset = data.offset;
+    hasMore = Boolean(data.offset);
+  } catch (err) {
+    console.error("Error fetching batch:", err);
+    hasMore = false;
+  } finally {
+    loading = false;
   }
+}
 
   async function fetchAllData() {
     offset = null;
@@ -349,7 +357,13 @@
   <div class="article-footer">
 
     <p class="update-date">
-      Updated on {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+      {#if lastUpdatedDate}
+        Updated on {new Date(lastUpdatedDate).toLocaleDateString('en-US', {
+          month: 'long', day: 'numeric', year: 'numeric'
+        })}
+      {:else}
+        Loading update date...
+      {/if}
     </p>
   </div>
 </div>
