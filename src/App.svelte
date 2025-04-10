@@ -299,10 +299,10 @@
 
 <div class="article">
 
-    <h1 class="article-title">Tow Platforms and Publishers Timeline    </h1>
+    <h1 class="article-title">Tow Center <br/>Platforms and Publishers Timeline</h1>
 
     <p class="article-intro">
-      The timeline below identifies key developments in the relationship between technology platforms and news publishers. Though this timeline was originally created to monitor shifts and trends in the social media platform landscape, it has been expanded to also incorporate developments related to artificial intelligence technologies.
+      The timeline below, compiled by the Tow Center for Digital Journalism, identifies key developments in the relationship between technology platforms and news publishers.
     </p>
 
     <p class="article-intro">
@@ -536,15 +536,15 @@
   }
 
   .article-title {
-    font-family: "EB Garamond", serif;
-    font-size: 3rem;
-    /* font-size: 2.5rem; */
-    font-style: italic;
-    font-weight: 800;
-    margin-bottom: 1rem;
-    color: #111;
-    text-align: left;
-  }
+  font-family: "Helvetica Neue", sans-serif;
+  font-size: 3rem;
+  line-height: 1.1;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #d6613b;
+  text-align: left;
+  letter-spacing: -0.02em;
+}
 
   .article-intro {
     font-size: 1.125rem;
@@ -803,17 +803,29 @@
   .search-wrapper {
     flex: 2;
     position: relative;
+    font-family: 'Helvetica Neue', sans-serif;
   }
 
   .search-input {
     width: 100%;
-    padding: 0.5rem 1rem;
+    padding: 0.75rem 1rem;
     font-size: 0.875rem;
     font-weight: 500;
-    border: 1px solid #aaa;
-    background: #fff;
-    font-family: inherit;
+    border: 1px solid #43485A;
+    background: white;
+    color: #43485A;
+    font-family: 'Helvetica Neue', sans-serif;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+  }
 
+  .search-input:hover {
+    background-color: rgba(67, 72, 90, 0.1);
+  }
+
+  .search-input::placeholder {
+    color: #43485A;
+    font-weight: 600;
   }
 
   .clear-search {
@@ -823,9 +835,14 @@
     transform: translateY(-50%);
     border: none;
     background: none;
-    color: #888;
-    font-size: 1rem;
+    color: #43485A;
+    font-size: 0.875rem;
     cursor: pointer;
+    padding: 0.25rem;
+  }
+
+  .clear-search:hover {
+    color: #d6613b;
   }
 
   /* Export Button */
@@ -926,6 +943,52 @@
       font-size: 0.75rem;
     }
   }
+  @media (max-width: 768px) {
+  .article-title {
+    font-size: 2rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Update the search container and export button styles */
+.search-container {
+  font-family: 'helvetica neue', sans-serif;
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+  display: flex;
+  gap: 1rem;
+  align-items: stretch; /* Change from flex-start to stretch */
+}
+
+.search-wrapper {
+  flex: 2;
+  position: relative;
+}
+
+.export-container {
+  flex: 1;
+  display: flex;
+}
+
+.export-button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #d6613b;
+  background: white;
+  border: 1px solid #d6613b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Helvetica Neue', sans-serif;
+  height: 100%;
+  box-sizing: border-box;
+}
+
+.export-button:hover:not(:disabled) {
+  background-color: rgba(214, 97, 59, 0.1);
+}
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">

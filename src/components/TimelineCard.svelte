@@ -200,7 +200,7 @@
   display: block;
   /* font-family: 'Helvetica Neue', sans-serif; */
   font-size: 1.1rem;
-  color: #D9626B;
+  color: #d6613b;
   text-decoration: underline;
   margin-bottom: 0.5rem;
   transition: color 0.2s ease;
