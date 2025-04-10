@@ -26,7 +26,7 @@
   const categoryDefinitions = {
     "advertising product": "Development, launch, or changes in advertising products",
     "AI / automation": "Integration of artificial intelligence and automation technologies within platforms’ or publishers’ operations; noteworthy advancements in the broader AI landscape; partnerships between AI companies and publishers; news related to AI-generated content",
-    "AI incidents" : "instances of harms (or near-harms) related to AI and journalism",
+    "AI incidents" : "Instances of harms (or near-harms) related to AI and journalism",
     "algorithm": "Changes and updates made to the platform's algorithms, impacting how content is distributed, ranked, or presented",
     "alt-tech": "Updates related to social platforms popular among the alt-right, far-right and others who espouse extremism or fringe theories",
     "AR / VR": "Incorporation and advancement of Augmented Reality (AR) and Virtual Reality (VR) technologies within the platform's framework",
@@ -40,7 +40,7 @@
     "fediverse": "Updates related to decentralized social networking platforms that allow independent servers to communicate with each other through the ActivityPub protocol",
     "mis / disinformation": "Efforts and controversies surrounding the platform's attempts to combat or handle misinformation",
     "mission statement": "Updates or changes in the platform's mission and values",
-    "newsletters": "updates related to newsletter products or related audience engagement strategies",
+    "newsletters": "Updates related to newsletter products or related audience engagement strategies",
     "partnership": "Partnerships within and between tech companies and news organizations (or lack thereof)",
     "philanthropy": "Charitable initiatives, donations, or philanthropic efforts undertaken by the platform",
     "platform as publisher": "Instances where platforms themselves engage in publishing content, blurring the lines between platform and publisher",

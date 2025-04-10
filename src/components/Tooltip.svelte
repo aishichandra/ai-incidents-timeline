@@ -15,6 +15,7 @@
         position: relative;
         display: inline-block;
         font-family: 'Helvetica Neue', sans-serif;
+        font-weight: 500;
     }
 
     .tooltip {
@@ -32,7 +33,7 @@
         opacity: 0;
         transition: opacity 0.2s ease;
         pointer-events: none;
-        font-weight: 500;
+        font-weight: 400;
         z-index: 2000;
         font-family: 'Helvetica Neue', sans-serif;
     }
