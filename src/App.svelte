@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { fade } from 'svelte/transition';
   import TimelineCard from './components/TimelineCard.svelte';
+  import Tooltip from './components/Tooltip.svelte';
 
   let timelineData = [];
   let offset = null;
@@ -13,7 +14,7 @@
   let startDate = "";
   let endDate = "";
   let searchQuery = '';
-  
+
   let dropdownOpen = false;
   let platformDropdownOpen = false;
   let dateFilterOpen = false;
@@ -21,6 +22,35 @@
 
   let sentinel;
   let observer;
+
+  const categoryDefinitions = {
+    "advertising product": "Development, launch, or changes in advertising products",
+    "AI/automation": "Integration of artificial intelligence and automation technologies within platforms’ or publishers’ operations; noteworthy advancements in the broader AI landscape; partnerships between AI companies and publishers; news related to AI-generated content",
+    "algorithm": "Changes and updates made to the platform's algorithms, impacting how content is distributed, ranked, or presented",
+    "alt-tech": "Updates related to social platforms popular among the alt-right, far-right and others who espouse extremism or fringe theories",
+    "AR/VR": "Incorporation and advancement of Augmented Reality (AR) and Virtual Reality (VR) technologies within the platform's framework",
+    "audience engagement": "User engagement metrics, features, or strategies",
+    "bug/glitch/issue": "Technical glitches, bugs, or issues that impact the platform's functionality",
+    "business": "Corporate activities such as acquisitions, rebrands, and strategic shifts, highlighting significant changes in the platform's business landscape",
+    "content moderation": "Changes or controversies surrounding the platform's policies and practices for moderating content",
+    "COVID-19": "Impact of the COVID-19 pandemic on the platform, including changes in user behavior, policies, or response strategies",
+    "data/security": "Data breaches, security measures, or changes in data handling policies and practices",
+    "elections/civic integrity": "Platform involvement in elections, including measures taken to prevent misinformation, political advertising policies, and responses to election-related events",
+    "fediverse": "Updates related to decentralized social networking platforms that allow independent servers to communicate with each other through the ActivityPub protocol",
+    "mis/disinformation": "Efforts and controversies surrounding the platform's attempts to combat or handle misinformation",
+    "mission statement": "Updates or changes in the platform's mission and values",
+    "partnership": "Partnerships within and between tech companies and news organizations (or lack thereof)",
+    "philanthropy": "Charitable initiatives, donations, or philanthropic efforts undertaken by the platform",
+    "platform as publisher": "Instances where platforms themselves engage in publishing content, blurring the lines between platform and publisher",
+    "platform competition": "Competitor-related events, market dynamics, or strategic moves in response to competition",
+    "platform personnel": "Changes in key personnel within the platform, such as CEOs, executives, or notable hires",
+    "policy change": "Changes in terms of service, rules, or overall policies governing user behavior on the platform",
+    "product": "Launches or updates to platform features, tools, or services",
+    "regulation/legal dispute": "Legal challenges, regulatory scrutiny, or changes in legislation affecting the platform",
+    "research/investigation": "Studies, investigations, or research initiatives undertaken by the platform or external parties related to its impact or practices",
+    "revenue/funding": "Updates about platforms’ or publishers’ income or earnings"
+  };
+
 
   const AIRTABLE_URL = "https://api.airtable.com/v0/appbtcs0TcBJOaflz/tbl8VV3Klj4Icfkb8";
   const AIRTABLE_HEADERS = {
@@ -61,8 +91,13 @@
       if (offset) url.searchParams.append("offset", offset);
       url.searchParams.append("view", "viwlZ0icRGkfLhux6");
       url.searchParams.append("pageSize", 20);
+
       const res = await fetch(url.toString(), { headers: AIRTABLE_HEADERS });
-      if (!res.ok) throw new Error(`Error fetching Airtable data: ${res.status}`);
+
+      if (!res.ok) {
+        throw new Error(`Error fetching Airtable data: ${res.status}`);
+      }
+
       const data = await res.json();
 
       const newRecords = data.records
@@ -132,10 +167,10 @@
 
   function filterByDateRange(data, start, end) {
     if (!start && !end) return data;
-    
+
     const startTime = start ? new Date(start).getTime() : -Infinity;
     const endTime = end ? new Date(new Date(end).setHours(23, 59, 59, 999)).getTime() : Infinity;
-    
+
     return data.filter(item => {
       const itemTime = new Date(item.date).getTime();
       return itemTime >= startTime && itemTime <= endTime;
@@ -145,7 +180,7 @@
   function filterBySearch(data, query) {
     if (!query) return data;
     const searchTerm = query.toLowerCase();
-    return data.filter(item => 
+    return data.filter(item =>
       item.description.toLowerCase().includes(searchTerm) ||
       item.title.toLowerCase().includes(searchTerm)
     );
@@ -162,7 +197,7 @@
 
     const sortedGroups = {};
     Object.keys(groups)
-      .sort((a, b) => new Date(b) - new Date(a)) // Default: most recent first
+      .sort((a, b) => new Date(b) - new Date(a))
       .forEach(key => {
         sortedGroups[key] = groups[key];
       });
@@ -180,6 +215,38 @@
 
   function scrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function exportToCSV(data) {
+    const headers = ['Date', 'Title', 'Platform', 'Categories', 'Description', 'Sources'];
+
+    const rows = data.map(item => [
+      item.date,
+      item.title,
+      Array.isArray(item.platform) ? item.platform.join('; ') : item.platform,
+      item.categories.join('; '),
+      item.description,
+      item.links.map(link => link.url).join('; ')
+    ]);
+
+    const csv = [
+      headers.join(','),
+      ...rows.map(row =>
+        row.map(cell =>
+          `"${String(cell).replace(/"/g, '""')}"`
+        ).join(',')
+      )
+    ].join('\n');
+
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    link.setAttribute('href', url);
+    link.setAttribute('download', `timeline-export-${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.display = 'none';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   onMount(() => {
@@ -227,7 +294,6 @@
   $: groupedData = groupByMonth(filteredData);
 </script>
 
-
 <div class="article">
 
     <h1 class="article-title">Tow Platforms and Publishers Timeline    </h1>
@@ -239,36 +305,12 @@
     <p class="article-intro">
       This timeline contains updates related to the following categories, as they relate to platforms and publishers:
       <span class="category-tags">
-        {#each [
-          "advertising products",
-          "AI and automation tools",
-          "AI incidents",
-          "algorithm updates",
-          "alt-tech platforms",
-          "augmented and virtual reality",
-          "audience engagement",
-          "bugs, glitches and issues",
-          "business developments",
-          "content moderation",
-          "COVID-19 impacts",
-          "data and security",
-          "elections and civic integrity",
-          "fediverse advancements",
-          "mis- and disinformation",
-          "company mission statements",
-          "platform partnerships",
-          "philanthropic endeavors",
-          "platform competition",
-          "platforms as publishers",
-          "newsletter products",
-          "platform personnel",
-          "policy changes",
-          "product updates",
-          "regulations and legal",
-          "research and investigations",
-          "revenue and funding"
-        ] as category}
-          <span class="category-tag">{category}</span>
+        {#each Object.entries(categoryDefinitions) as [category, definition]}
+          <Tooltip text={definition}>
+            <span class="category-tag">
+              {category}
+            </span>
+          </Tooltip>
         {/each}
       </span>
       You can learn more about how we define our categories <a href="#" class="category-link">here</a>.
@@ -286,8 +328,6 @@
     </p>
   
 </div>
-
-
 
 <div class="filter-container">
   <div class="dropdown date-filter">
@@ -395,6 +435,19 @@
       </button>
     {/if}
   </div>
+
+  <div class="export-container">
+    <button 
+      class="export-button"
+      on:click={() => exportToCSV(filteredData)}
+      disabled={filteredData.length === 0}
+    >
+      {filteredData.length === 0 
+        ? 'No data to export' 
+        : `Export ${filteredData.length} items to CSV`}
+    </button>
+
+  </div>
 </div>
 
 
@@ -495,7 +548,7 @@
   padding: 1rem;
   display: flex;
   gap: 1rem;
-  margin: 2rem auto;
+  margin: 2rem auto 1rem; 
 }
 
 /* Update dropdown width */
@@ -605,7 +658,7 @@
 
 .timeline-container {
   max-width: 1000px;
-  margin: 0 0 0 130px;
+  margin: 0 auto;
   padding: 4rem 2rem;
   width: 100%;
   position: relative;
@@ -933,16 +986,19 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin: 1rem 0;
+  margin: 1rem 0 3rem; /* <-- Added extra bottom margin */
+  position: relative;
+  z-index: 1;
 }
 
 .category-tag {
   font-size: 0.75rem;
-  background-color: rgb(214, 97, 59, 0.2);
+  background-color: rgba(214, 97, 59, 0.2);
   color: #43485A;
   padding: 0.35rem 0.75rem;
   border: 1px solid #d6613b;
   font-weight: 500;
+  cursor: help;
 }
 
 .category-tag:hover {
@@ -969,19 +1025,47 @@
 
 .search-container {
   width: 100%;
-  max-width: 500px;
-  margin: 2rem auto;
+  max-width: 800px;
+  margin: 0 auto; /* Remove top margin */
   padding: 0 1rem;
+  display: flex;
+  gap: 2rem;
+  align-items: center;
 }
 
 .search-wrapper {
   position: relative;
-  width: 100%;
+  flex: 2; 
+}
+
+.export-container {
+  flex: 1; 
+  margin: 0; 
+  padding: 0; 
+}
+
+.export-button {
+  width: 100%; 
+}
+
+@media (max-width: 768px) {
+  .search-container {
+    flex-direction: column;
+  }
+
+  .search-wrapper,
+  .export-container {
+    width: 100%;
+  }
+
+  .export-button {
+    margin-top: 1rem;
+  }
 }
 
 .search-input {
   width: 100%;
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 1rem; 
   font-size: 0.875rem;
   font-weight: 500;
   color: #374151;
@@ -989,6 +1073,8 @@
   background-color: white;
   box-shadow: 4px 4px 0 0 #d6613b;
   font-family: inherit;
+  height: 36px; 
+  box-sizing: border-box; 
 }
 
 
@@ -1024,7 +1110,43 @@
   }
 }
 
+/* Add to your existing styles */
+.export-container {
+  width: 100%;
+  max-width: 800px;
+  display: flex;
+  justify-content: flex-end;
+}
 
+.export-button {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #43485A;
+  background-color: white;
+  border: 1px solid #43485A;
+  box-shadow: 4px 4px 0 0 #d6613b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.export-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 5px 5px 0 0 #d6613b;
+}
+
+.export-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .export-button {
+    width: 100%;
+    padding: 0.75rem;
+  }
+}
 </style>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
